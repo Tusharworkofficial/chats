@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find My Device</title>
+    <style>
+        :root {
+            --primary-color: #8F0524;
+            --secondary-color: #f5f5f5;
+            --background-color: #576363;
+            --text-color: #333333;
+            --accent-color: #8F0524;
+            --button-hover-color: #4A0714;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --background-colors: #f5f5f5;
+            --highlight-color: #FCC5A8;
+            /* New color for navbar text and buttons */
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        :root {
+            --color-1: #8F0524;
+            --text-color: #f0f0f0;
+            --accent-color: #FCC5A8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 12pt;
+            font-family: Poppins, Segoe UI, Tahoma, sans-serif;
+        }
+
+        nav {
+            height: 60px;
+            background-color: var(--color-1);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .links-container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        nav a {
+            height: 100%;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+
+        }
+
+        nav a:hover {
+            background-color: var(--accent-color);
+            border: 2px solid #ff9900;
+            box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+            color: rgb(22, 159, 168);
+        }
+
+        nav .home-link {
+            margin-right: auto;
+
+        }
+
+        nav .a {
+            border-bottom: 1px solid white;
+
+        }
+
+        nav svg {
+            fill: var(--text-color);
+            border: 1px solid white;
+        }
+
+        #sidebar-active {
+            display: none;
+        }
+
+        .open-sidebar-button,
+        .close-sidebar-button {
+            display: none;
+
+        }
+
+        @media(max-width: 450px) {
+            .links-container {
+                flex-direction: column;
+                align-items: flex-start;
+                border-bottom: 100px solid white;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                z-index: 10;
+                width: 300px;
+
+                background-color: var(--color-1);
+                box-shadow: -5px 0 5px rgba(0, 0, 0, 0.25);
+                transition: 0.75s ease-out;
+            }
+
+            nav a {
+                box-sizing: border-box;
+                height: auto;
+                width: 100%;
+                padding: 20px 30px;
+                justify-content: flex-start;
+                border-bottom: 1px solid white;
+            }
+
+            nav .home-link {
+                border-top: 1px solid white;
+            }
+
+            .open-sidebar-button,
+            .close-sidebar-button {
+                padding: 32px;
+                display: block;
+                padding-top: 37px;
+            }
+
+            #sidebar-active:checked~.links-container {
+                right: 0;
+            }
+
+            #sidebar-active:checked~#overlay {
+                height: 100%;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 9;
+            }
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-left: 2px;
+        }
+
+        @media (min-width: 1024px) {
+            header {
+                padding: 1.5rem 4rem;
+            }
+
+            main {
+                padding: 2rem 4rem;
+            }
+        }
+
+        .nav-logo {
+            font-size: 1.8rem;
+            color: var(--highlight-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            color: var(--highlight-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        nav ul li .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border-radius: 4px;
+            z-index: 1000;
+            padding: 0.5rem 0;
+        }
+
+        nav ul li:hover .dropdown {
+            display: block;
+        }
+
+        nav ul li .dropdown a {
+            display: block;
+            padding: 0.5rem 1rem;
+            white-space: nowrap;
+        }
+
+        nav ul li .dropdown a:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        /* Main Content */
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .content-container {
+            background-color: rgb(247, 247, 247);
+            color: var(--text-color-dark);
+            border-radius: 15px;
+            padding: 2rem;
+            padding-top: 70px;
+            padding-bottom: 95px;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            text-align: center;
+            margin: 12px;
+        }
+
+        .content-containers {
+            background-color: rgb(247, 247, 247);
+            color: var(--text-color-dark);
+            border-radius: 15px;
+            padding: 2rem;
+            padding-top: 26px;
+            padding-bottom: 23px;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            text-align: center;
+            margin: 12px;
+        }
+
+        .image-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+            padding-top: 23px;
+        }
+
+        .image-container img {
+            width: 100%;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+        }
+
+        .qr-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+
+        }
+
+        .qr-container img {
+            border: 3px solid var(--primary-color);
+            border-radius: 10px;
+            width: 150px;
+            height: auto;
+            box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+        }
+
+        .qr-container p {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+
+        }
+
+        .link-container {
+            margin-top: 1rem;
+        }
+
+        .link-container a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--primary-color);
+            background-color: var(--accent-color);
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+
+        }
+
+        .link-container a:hover {
+            background-color: var(--primary-color);
+            color: var(--text-color-light);
+        }
+
+
+        .text-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+            text-align: center;
+            padding: 30px;
+            background-color: var(--background-colors);
+            border-radius: 15px;
+            box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 6px, rgba(0, 0, 0, 0.1) 0px 1px 3px;
+            transition: all 0.3s ease;
+        }
+
+        .text-container:hover {
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 6px 10px, rgba(0, 0, 0, 0.1) 0px 2px 4px;
+            transform: translateY(-5px);
+        }
+
+        .text-container h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .text-container p {
+            font-size: 2rem;
+            color: black;
+            line-height: 1.6;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-color);
+            color: var(--text-color-light);
+            text-align: center;
+            padding: 1rem;
+            width: auto;
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+
+
+
+
+        /* For devices wider than 1024px (PC and Laptop) */
+        /* Media Queries */
+        @media (max-width: 768px) {
+
+            .content-container,
+            .content-containers {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+
+            .image-container,
+            .qr-container {
+                max-width: 100%;
+                flex: 1 1 100%;
+            }
+
+            footer {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+
+            .content-container,
+            .content-containers {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .text-container {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+
+            footer {
+                padding: 1rem;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <input type="checkbox" id="sidebar-active">
+            <label for="sidebar-active" class="open-sidebar-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                    <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+                </svg>
+            </label>
+            <label id="overlay" for="sidebar-active"></label>
+            <div class="links-container">
+                <label for="sidebar-active" class="close-sidebar-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                        <path
+                            d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                    </svg>
+                </label>
+                <a class="home-link" href="index.html">Generate barcode</a>
+                <a href="scan.html">Scan Barcode</a>
+                <a href="database.html">DataBase</a>
+                <a href="Tag.html">Tags Location</a>
+                <a href="mobilescanner.html">Mobile Scanner</a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="content-containers">
+            <div class="text-container">
+                <h1>Tag Name</h1>
+                <p id="tag-name">Tag Name will be displayed here.</p>
+            </div>
+        </div>
+        <div class="content-container">
+            <div class="image-container">
+                <img src="image.png" alt="Find My Device Image">
+            </div>
+            <div class="qr-container">
+                <p>Scan this QR Code to learn more:</p>
+                <img src="qrcode_www.google.com.png" alt="Find My Device QR Code">
+                <div class="link-container">
+                    <a href="https://www.google.com/android/find/about" target="_blank">Explore Find My Device</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        © 2025 Find My Device Page
+    </footer>
+
+    <script>
+        // Function to get URL parameter value by name
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Display the tag name on the page
+        document.addEventListener("DOMContentLoaded", function () {
+            const tagName = getQueryParam('tagName');
+            if (tagName) {
+                document.getElementById('tag-name').textContent = tagName;
+            }
+        });
+    </script>
+</body>
+
+</html>
