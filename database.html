@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Database</title>
+    <link rel="stylesheet" href="css/database.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <input type="checkbox" id="sidebar-active">
+            <label for="sidebar-active" class="open-sidebar-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                    <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+                </svg>
+            </label>
+            <label id="overlay" for="sidebar-active"></label>
+            <div class="links-container">
+                <label for="sidebar-active" class="close-sidebar-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                        <path
+                            d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                    </svg>
+                </label>
+                <a class="home-link" href="index.html">Generate barcode</a>
+                <a href="scan.html">Scan Barcode</a>
+                <a href="database.html">DataBase</a>
+                <a href="Tag.html">Tags Location</a>
+                <a href="mobilescanner.html">Mobile Scanner</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="controls">
+            <input type="text" id="search" placeholder="Search by Product Name or ID...">
+            <button id="export-csv">Export CSV</button>
+            <button id="export-excel">Export Excel</button>
+            <button id="delete-all">Delete All</button>
+        </div>
+
+        <div class="xyz">
+            <table id="database-table">
+                <thead>
+                    <tr>
+                        <th>Material ID</th>
+                        <th>Material Name</th>
+                        <th>Quantity</th>
+                        <th>unit</th>
+                        <th>Expiry Date</th>
+                        <th>Supplier Details</th>
+                        <th>Category</th>
+                        <th>Batch</th>
+                        <th>Cost Per Unit</th>
+                        <th>Manufacturer Name</th>
+                        <th>Time Stamp</th>
+                        <th>Actions</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Entries will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Barcode Manager</p>
+    </footer>
+
+
+
+    <!-- this is the javascript code-->
+
+    <script>
+        const databaseTable = document.getElementById('database-table').querySelector('tbody');
+        const searchInput = document.getElementById('search');
+
+        const getDatabase = () => JSON.parse(localStorage.getItem('barcodeDatabase')) || [];
+
+        const setDatabase = (data) => {
+            localStorage.setItem('barcodeDatabase', JSON.stringify(data));
+        };
+
+        const renderTable = (filter = '') => {
+            const database = getDatabase();
+            databaseTable.innerHTML = '';
+
+            database
+                .filter(entry => {
+                    const filterLower = filter.toLowerCase();
+                    return (
+                        entry.materialId.toLowerCase().includes(filterLower) ||
+                        entry.materialName.toLowerCase().includes(filterLower)
+                    );
+                })
+                .forEach((entry, index) => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${entry.materialId}</td>
+                        <td>${entry.materialName}</td>
+                        <td>${entry.quantity}</td>
+                        <td>${entry.unit}</td>
+                        <td>${entry.expiryDate}</td>
+                        <td>${entry.supplierDetails}</td>
+                        <td>${entry.category}</td>
+                        <td>${entry.batch}</td>
+                        <td>${entry.costPerUnit}</td>
+                        <td>${entry.manufacturerName || 'N/A'}</td>
+                        <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                        <td>
+                            <button onclick="editEntry(${index})">Edit</button>
+                            <button onclick="deleteEntry(${index})">Delete</button>
+                        </td>
+                    `;
+                    databaseTable.appendChild(row);
+                });
+        };
+
+        const editEntry = (index) => {
+            const database = getDatabase();
+            const entry = database[index];
+
+            const newMaterialId = prompt('Enter new Material ID:', entry.materialId);
+            const newMaterialName = prompt('Enter new Material Name:', entry.materialName);
+            const newQuantity = prompt('Enter new Quantity:', entry.quantity);
+            const newManufacturerName = prompt('Enter new Manufacturer Name:', entry.manufacturerName);
+
+            if (newMaterialId && newMaterialName && newQuantity) {
+                database[index] = { ...entry, materialId: newMaterialId, materialName: newMaterialName, quantity: newQuantity, manufacturerName: newManufacturerName };
+                setDatabase(database);
+                renderTable();
+            }
+        };
+
+        const deleteEntry = (index) => {
+            const database = getDatabase();
+            database.splice(index, 1);
+            setDatabase(database);
+            renderTable();
+        };
+
+        const deleteAllEntries = () => {
+            if (confirm('Are you sure you want to delete all entries? This action cannot be undone.')) {
+                setDatabase([]);
+                renderTable();
+            }
+        };
+
+        const exportData = (type) => {
+            const database = getDatabase();
+            let content = '';
+
+            if (type === 'csv') {
+                content = 'Material ID,Material Name,Quantity,Unit,Expiry Date,Supplier Details,Category,Batch,Cost Per Unit,Manufacturer Name,Time Stamp\n';
+                database.forEach(entry => {
+                    content += `${entry.barcodeId},${entry.materialId},${entry.materialName},${entry.quantity},${entry.unit},${entry.expiryDate},${entry.supplierDetails},${entry.category},${entry.batch},${entry.costPerUnit},${entry.manufacturerName},${entry.timestamp}\n`;
+                });
+
+                const blob = new Blob([content], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'barcode_database.csv';
+                link.click();
+            } else if (type === 'excel') {
+                content = '<table><tr><th>Material ID</th><th>Material Name</th><th>Quantity</th><th>Unit</th><th>Expiry Date</th><th>Supplier Details</th><th>Category</th><th>Batch</th><th>Cost Per Unit</th><th>Manufacturer Name</th><th>Time Stamp</th></tr>';
+                database.forEach(entry => {
+                    content += `<tr><td>${entry.materialId}</td><td>${entry.materialName}</td><td>${entry.quantity}</td><td>${entry.unit}</td><td>${entry.expiryDate}</td><td>${entry.supplierDetails}</td><td>${entry.category}</td><td>${entry.batch}</td><td>${entry.costPerUnit}</td><td>${entry.manufacturerName}</td><td>${entry.timestamp}</td></tr>`;
+                });
+                content += '</table>';
+
+                const blob = new Blob([content], { type: 'application/vnd.ms-excel' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'barcode_database.xls';
+                link.click();
+            }
+        };
+
+        document.getElementById('export-csv').addEventListener('click', () => exportData('csv'));
+        document.getElementById('export-excel').addEventListener('click', () => exportData('excel'));
+        document.getElementById('delete-all').addEventListener('click', deleteAllEntries);
+        searchInput.addEventListener('input', () => {
+            const filter = searchInput.value.toLowerCase();
+            renderTable(filter);
+        });
+
+        const addQuantity = (index, additionalQuantity) => {
+            const database = getDatabase();
+            const entry = database[index];
+
+            const currentQuantity = Number(entry.quantity); // Ensure numeric value
+            const addedQuantity = Number(additionalQuantity); // Ensure numeric value
+
+            if (!isNaN(currentQuantity) && !isNaN(addedQuantity)) {
+                const updatedQuantity = currentQuantity + addedQuantity; // Perform addition
+                entry.quantity = updatedQuantity; // Update quantity in the entry
+
+                setDatabase(database); // Save the updated database to localStorage
+                renderTable(); // Re-render the table to reflect changes
+                alert(`Quantity updated: ${currentQuantity} + ${addedQuantity} = ${updatedQuantity}`);
+            } else {
+                alert('Please ensure quantities are valid numbers.');
+            }
+        };
+
+        renderTable();
+
+        document.addEventListener('DOMContentLoaded', updateDatabaseTable);
+    </script>
+
+    <!-- Javascript Ends -->
+</body>
+
+</html>

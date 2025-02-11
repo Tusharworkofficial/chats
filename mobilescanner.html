@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR & Barcode Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+            margin: 0;
+        }
+
+        :root {
+            --primary-color: #5d3136;
+            --secondary-color: #f5f5f5;
+            --background-color: #f9ecdf;
+            --text-color: #333333;
+            --accent-color: #8F0524;
+            --button-hover-color: #4A0714;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --background-colors: #f5f5f5;
+            --highlight-color: #FCC5A8;
+            /* New color for navbar text and buttons */
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        :root {
+            --color-1: #5d3136;
+            --text-color: #f0f0f0;
+            --accent-color: #FCC5A8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 12pt;
+            font-family: Poppins, Segoe UI, Tahoma, sans-serif;
+        }
+
+        nav {
+            height: 60px;
+            background-color: var(--color-1);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .links-container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        nav a {
+            height: 100%;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            border-radius: 72px;
+
+        }
+
+        nav a:hover {
+            background-color: #f9ecdf;
+            border: 2px solid #f9ecdf;
+            box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+            color: rgb(22, 159, 168);
+        }
+
+        nav .home-link {
+            margin-right: auto;
+
+        }
+
+        nav .a {
+            border-bottom: 1px solid white;
+
+        }
+
+        nav svg {
+            fill: var(--text-color);
+            border: 1px solid white;
+        }
+
+        #sidebar-active {
+            display: none;
+        }
+
+        .open-sidebar-button,
+        .close-sidebar-button {
+            display: none;
+
+        }
+
+        @media(max-width: 450px) {
+            .links-container {
+                flex-direction: column;
+                align-items: flex-start;
+                border-bottom: 100px solid white;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                z-index: 10;
+                width: 300px;
+
+                background-color: var(--color-1);
+                box-shadow: -5px 0 5px rgba(0, 0, 0, 0.25);
+                transition: 0.75s ease-out;
+            }
+
+            nav a {
+                box-sizing: border-box;
+                height: auto;
+                width: 100%;
+                padding: 20px 30px;
+                justify-content: flex-start;
+                border-bottom: 1px solid white;
+            }
+
+            nav .home-link {
+                border-top: 1px solid white;
+            }
+
+            .open-sidebar-button,
+            .close-sidebar-button {
+                padding: 32px;
+                display: block;
+                padding-top: 37px;
+            }
+
+            #sidebar-active:checked~.links-container {
+                right: 0;
+            }
+
+            #sidebar-active:checked~#overlay {
+                height: 100%;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 9;
+            }
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-left: 2px;
+        }
+
+        @media (min-width: 1024px) {
+            header {
+                padding: 1.5rem 4rem;
+            }
+
+            main {
+                padding: 2rem 4rem;
+            }
+        }
+
+        .nav-logo {
+            font-size: 1.8rem;
+            color: var(--highlight-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            color: var(--highlight-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        nav ul li .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border-radius: 4px;
+            z-index: 1000;
+            padding: 0.5rem 0;
+        }
+
+        nav ul li:hover .dropdown {
+            display: block;
+        }
+
+        nav ul li .dropdown a {
+            display: block;
+            padding: 0.5rem 1rem;
+            white-space: nowrap;
+        }
+
+        nav ul li .dropdown a:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        h3 {
+            color: black;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            margin: 20px auto;
+            max-width: 500px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .btn {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .btn.upload {
+            background: #5d3136;
+
+        }
+
+        .btn.upload:hover {
+            background: #4A0714;
+        }
+
+        .btn.camera {
+            background: #5d3136;
+        }
+
+        .btn.camera:hover {
+            background: #4A0714;
+        }
+
+        .btn.stop {
+            background: #8F0524;
+        }
+
+        .btn-stop:hover {
+            background: #4A0714;
+        }
+
+        .drop-area {
+            margin: 15px 0;
+            padding: 20px;
+            border: 2px dashed #5d3136;
+            background: #f9f9f9;
+            border-radius: 8px;
+            cursor: pointer;
+            color: black;
+        }
+
+        .scanner-container,
+        .image-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #reader {
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        #uploaded-image {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+
+        #scan-result {
+            font-weight: bold;
+            color: #8F0524;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <input type="checkbox" id="sidebar-active">
+            <label for="sidebar-active" class="open-sidebar-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                    <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+                </svg>
+            </label>
+            <label id="overlay" for="sidebar-active"></label>
+            <div class="links-container">
+                <label for="sidebar-active" class="close-sidebar-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32">
+                        <path
+                            d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                    </svg>
+                </label>
+                <a class="home-link" href="index.html">Generate barcode</a>
+                <a href="scan.html">Scan Barcode</a>
+                <a href="database.html">DataBase</a>
+                <a href="Tag.html">Tags Location</a>
+                <a href="mobilescanner.html">Mobile Scanner</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <button class="btn upload" onclick="uploadFile()">Upload File</button>
+        <button class="btn camera" onclick="startScanner()">Start Scanner</button>
+        <div class="drop-area" id="drop-area">Drag & Drop or Click to Upload Image</div>
+        <p id="scan-results" style="font-size: 20px; font-weight: bold; color: #8F0524; display: none;"></p>
+
+        <!-- Uploaded Image Preview -->
+        <div class="image-preview" id="image-preview">
+            <h3>Uploaded Image:</h3>
+            <img id="uploaded-image" src="" alt="Uploaded Image">
+            <canvas id="canvas" style="display:none;"></canvas>
+            <p id="scan-result"></p>
+        </div>
+
+        <!-- Live Scanner -->
+        <div class="scanner-container" id="scanner-container">
+            <h3>Scanning...</h3>
+            <div id="reader"></div>
+            <p id="live-result"></p>
+            <button class="btn stop" onclick="stopScanner()">Stop Scanner</button>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const imagePreview = document.getElementById('image-preview');
+        const uploadedImage = document.getElementById('uploaded-image');
+        const scanResult = document.getElementById('scan-result');
+        const scannerContainer = document.getElementById('scanner-container');
+        const liveResult = document.getElementById('live-result');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext("2d");
+        let html5QrCode;
+
+        // Drag & Drop Upload
+        dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.style.borderColor = '#005bbb'; });
+        dropArea.addEventListener('dragleave', () => { dropArea.style.borderColor = '#0073e6'; });
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function uploadFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            input.onchange = (e) => handleFiles(e.target.files);
+            input.click();
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === "application/pdf") {
+                    convertPDFtoImage(file);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        uploadedImage.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        scanImage(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        // Convert PDF to Image
+        function convertPDFtoImage(pdfFile) {
+            const reader = new FileReader();
+            reader.onload = async function () {
+                const pdfData = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                const page = await pdf.getPage(1);
+                const scale = 2;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const renderContext = { canvasContext: ctx, viewport };
+                await page.render(renderContext).promise;
+
+                // Convert canvas to image
+                const imageData = canvas.toDataURL("image/png");
+                uploadedImage.src = imageData;
+                imagePreview.style.display = 'block';
+                scanImage(imageData);
+            };
+            reader.readAsArrayBuffer(pdfFile);
+        }
+
+        // Scan Uploaded Image
+        function scanImage(imageData) {
+            scanResult.textContent = 'Scanning image...';
+
+            const img = new Image();
+            img.src = imageData;
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (qrCode) {
+                    scanResult.textContent = `QR Code: ${qrCode.data}`;
+                } else {
+                    Quagga.decodeSingle({
+                        src: img.src,
+                        numOfWorkers: 0,
+                        decoder: { readers: ["code_128_reader", "ean_reader", "upc_reader", "code_39_reader"] }
+                    }, (result) => {
+                        if (result && result.codeResult) {
+                            scanResult.textContent = `Barcode: ${result.codeResult.code}`;
+                        } else {
+                            scanResult.textContent = `No QR/Barcode found.`;
+                        }
+                    });
+                }
+            };
+        }
+
+
+
+
+
+
+        async function startScanner() {
+            scannerContainer.style.display = 'block';
+            liveResult.textContent = '';
+
+            // Reset if already stopped
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            try {
+                await html5QrCode.start(
+                    { facingMode: "environment" }, // Use back camera
+                    { fps: 10, qrbox: 250 },
+                    (decodedText) => {
+                        liveResult.textContent = `Scanned Result: ${decodedText}`;
+                        stopScanner(); // Auto-stop after successful scan
+                        displayScanResult(decodedText);
+                    },
+                    (errorMessage) => {
+                        console.log("Scan error:", errorMessage);
+                    }
+                );
+            } catch (err) {
+                console.error("Failed to start scanner:", err);
+                liveResult.textContent = `Error: ${err.message || "Check camera permissions"}`;
+                scannerContainer.style.display = 'none';
+            }
+        }
+
+        // Function to stop the scanner and camera
+        async function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    console.log("Scanner stopped successfully");
+                } catch (err) {
+                    console.warn("Error stopping scanner:", err);
+                }
+            }
+            scannerContainer.style.display = 'none';
+            html5QrCode = null; // Reset the instance
+        }
+
+
+        // Function to display the scanned result on the webpage
+        function displayScanResult(result) {
+            const resultContainer = document.getElementById('scan-results');
+            resultContainer.textContent = `Scanned Data: ${result}`;
+            resultContainer.style.display = 'block';  // Show the result container
+        }
+
+    </script>
+
+</body>
+
+</html>
