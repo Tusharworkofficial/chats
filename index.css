@@ -545,7 +545,7 @@ footer {
     height: var(--gen-sz);
     width: var(--gen-sz);
     /* Set the initial color (the SVG uses currentColor for its fill) */
-    color: #ffea50;
+    color: #fff;
     fill: currentColor;
     transition: all 300ms ease;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
